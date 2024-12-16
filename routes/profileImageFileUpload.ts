@@ -7,7 +7,7 @@ import fs = require('fs')
 import { type Request, type Response, type NextFunction } from 'express'
 import { UserModel } from '../models/user'
 import logger from '../lib/logger'
-
+import path from 'path';
 import * as utils from '../lib/utils'
 const security = require('../lib/insecurity')
 const fileType = require('file-type')
@@ -25,7 +25,12 @@ module.exports = function fileUpload () {
       if (uploadedFileType !== null && utils.startsWith(uploadedFileType.mime, 'image')) {
         const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
         if (loggedInUser) {
-          fs.open(`frontend/dist/frontend/assets/public/images/uploads/${loggedInUser.data.id}.${uploadedFileType.ext}`, 'w', function (err, fd) {
+          const filePath = path.join(
+            __dirname, 
+            'frontend', 'dist', 'frontend', 'assets', 'public', 'images', 'uploads', 
+            `${loggedInUser.data.id}.${uploadedFileType.ext}`
+          );
+          fs.open(filePath, 'w', function (err, fd) {
             if (err != null) logger.warn('Error opening file: ' + err.message)
             // @ts-expect-error FIXME buffer has unexpected type
             fs.write(fd, buffer, 0, buffer.length, null, function (err) {
